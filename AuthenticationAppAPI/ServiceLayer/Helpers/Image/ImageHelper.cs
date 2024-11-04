@@ -36,13 +36,13 @@ namespace ServiceLayer.Helpers.Image
                     File.Delete(imagePath);
             }
 
-            string directory = Path.Combine(Directory.GetCurrentDirectory() + userRelativePath);
+            string directory = Path.Combine(Directory.GetCurrentDirectory(), userRelativePath);
             if(!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
 
             string extension = Path.GetExtension(newImage.FileName);
-            string imageFileName = Path.Combine(directory, user.ProfileImage)+extension;
+            string imageFileName = Path.Combine(directory, user.Email)+extension;
 			using (FileStream fs = new FileStream(imageFileName, FileMode.Create))
 			{
 				newImage.CopyTo(fs);
