@@ -49,6 +49,7 @@ namespace ServiceLayer.Helpers.Extensions
 
 			services.AddScoped<IAuthService, AuthService>();
 			services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IAdminService, AdminService>();
 			services.AddScoped<ITokenHelper, TokenHelper>();
 			services.AddScoped<IImageHelper, ImageHelper>();
 

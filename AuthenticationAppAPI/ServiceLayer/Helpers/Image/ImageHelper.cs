@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer.Helpers.Image
 {
-    public class ImageHelper(UserManager<User> userManager):IImageHelper
+    public class ImageHelper:IImageHelper
     {
 		private const string userRelativePath = "../ProfileImages";
 		public async Task<byte[]> GetProfileImage(string image)
@@ -25,7 +25,7 @@ namespace ServiceLayer.Helpers.Image
             byte[] imageResult = File.ReadAllBytes(imagePath);
             return imageResult;
         }
-        public async Task<bool> UploadProfileImage(User user, IFormFile newImage)
+        public async Task<bool> UploadProfileImage(User user, IFormFile newImage, UserManager<User> _userManager)
         {
             if(newImage is null) return false;
 
@@ -50,7 +50,7 @@ namespace ServiceLayer.Helpers.Image
 
 			user.ProfileImage = user.Email + extension;
 
-            var updateUser = await userManager.UpdateAsync(user);
+            var updateUser = await _userManager.UpdateAsync(user);
             if (!updateUser.Succeeded) return false;
 
             return true;

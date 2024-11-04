@@ -30,7 +30,7 @@ namespace ServiceLayer.Helpers.Token
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: userClaims,
-                expires: DateTime.Now.AddMinutes(10),
+                expires: DateTime.Now.AddDays(10),
                 signingCredentials: credentials
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);
