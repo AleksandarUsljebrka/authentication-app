@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Data.Models;
 using ServiceLayer.Services;
 using ServiceLayer.Helpers.Token;
+using AutoMapper;
+using ServiceLayer.Mapping;
 
 namespace ServiceLayer.Helpers.Extensions
 {
@@ -33,7 +35,16 @@ namespace ServiceLayer.Helpers.Extensions
 			.AddSignInManager();
 
 
+			var mapperConfig = new MapperConfiguration(mc =>
+			{
+				mc.AddProfile(new MappingProfile());
+			});
+			IMapper mapper = mapperConfig.CreateMapper();
+			services.AddSingleton(mapper);
+
+
 			services.AddScoped<IAuthService, AuthService>();
+			services.AddScoped<IUserService, UserService>();
 			services.AddScoped<ITokenHelper, TokenHelper>();
 
 

@@ -23,7 +23,8 @@ namespace ServiceLayer.Helpers.Token
             var userClaims = new[]
             {
                 new Claim("id", user.Id),
-                new Claim("email", user.Email)
+                new Claim("email", user.Email),
+                new Claim("role", user.Role)
             };
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],

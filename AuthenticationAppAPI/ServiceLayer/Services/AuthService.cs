@@ -46,7 +46,12 @@ namespace ServiceLayer.Services
 			bool checkPassword = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 			if (!checkPassword) return new Result(false, ErrorCode.BadRequest, "Password incorrect!");
 
-			var userSession = new UserSessionDto(user.Id, user.Email);
+			//it returns a list of roles
+			var userRoles = await _userManager.GetRolesAsync(user);
+			if (!userRoles.Any()) return new Result(false, ErrorCode.NotFound, "No roles found");
+
+			//I'll take first one because I assume that user have only one role
+			var userSession = new UserSessionDto(user.Id, user.Email, userRoles.First());
 			string token = _tokenHelper.GenerateToken(userSession);
 			return new Result(true, token!);
 		}
