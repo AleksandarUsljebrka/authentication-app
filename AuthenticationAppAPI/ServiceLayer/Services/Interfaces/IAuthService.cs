@@ -1,4 +1,5 @@
-﻿using ServiceLayer.DTOs.Result;
+﻿using ServiceLayer.DTOs.Auth;
+using ServiceLayer.DTOs.Result;
 using ServiceLayer.DTOs.User;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ namespace ServiceLayer.Services.Interfaces
 	public interface IAuthService
 	{
 		Task<IResult> CreateUser(RegisterDto userDto);
+		Task<IResult> LoginUser(LoginDto loginDto);
+
 
 	}
 }

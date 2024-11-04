@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ServiceLayer.DTOs.Auth;
 using ServiceLayer.DTOs.User;
 using ServiceLayer.Services.Interfaces;
 
@@ -17,6 +18,16 @@ namespace AuthenticationAppAPI.Controllers
 			if (!response.Successful) return StatusCode((int)response.ErrorCode, response.ErrorMess);
 			
 			return Ok();
+		}
+		[HttpPost]
+		[Route("login")]
+		public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+		{
+			var response = await _authService.LoginUser(loginDto);
+
+			if (!response.Successful) return StatusCode((int)response.ErrorCode, response.ErrorMess);
+
+			return Ok(response.Token);
 		}
 	}
 }

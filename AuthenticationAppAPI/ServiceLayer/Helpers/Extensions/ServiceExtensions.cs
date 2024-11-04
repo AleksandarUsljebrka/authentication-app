@@ -6,6 +6,7 @@ using ServiceLayer.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Data.Models;
 using ServiceLayer.Services;
+using ServiceLayer.Helpers.Token;
 
 namespace ServiceLayer.Helpers.Extensions
 {
@@ -33,7 +34,7 @@ namespace ServiceLayer.Helpers.Extensions
 
 
 			services.AddScoped<IAuthService, AuthService>();
-
+			services.AddScoped<ITokenHelper, TokenHelper>();
 
 
 
