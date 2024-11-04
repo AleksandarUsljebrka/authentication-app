@@ -9,7 +9,7 @@ namespace Data.Models
 		public string LastName { get; set; }
 		public DateTime DateOfBirth { get; set; }
 		public bool IsVerified { get; set; }
-		public string ProfileImage { get; set; }
+		public string? ProfileImage { get; set; }
 	}
 
 }
