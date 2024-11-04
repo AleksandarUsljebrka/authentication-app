@@ -9,6 +9,10 @@ using ServiceLayer.Services;
 using ServiceLayer.Helpers.Token;
 using AutoMapper;
 using ServiceLayer.Mapping;
+using ServiceLayer.Helpers.Image;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ServiceLayer.Helpers.Extensions
 {
@@ -46,8 +50,26 @@ namespace ServiceLayer.Helpers.Extensions
 			services.AddScoped<IAuthService, AuthService>();
 			services.AddScoped<IUserService, UserService>();
 			services.AddScoped<ITokenHelper, TokenHelper>();
+			services.AddScoped<IImageHelper, ImageHelper>();
 
+			services.AddAuthentication(opt =>
+			{
+				opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			})
+		 .AddJwtBearer(options =>
+		 {
+			 options.TokenValidationParameters = new TokenValidationParameters
+			 {
+				 ValidateIssuer = true,
+				 ValidateAudience = false,
+				 ValidateLifetime = true,
+				 ValidateIssuerSigningKey = true,
+				 ValidIssuer = configuration["Jwt:Issuer"],
+				 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
 
+			 };
+		 });
 
 			return services;
 		}
