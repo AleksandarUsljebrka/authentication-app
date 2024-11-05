@@ -12,23 +12,31 @@ namespace ServiceLayer.Services
 	public class AdminService:IAdminService
 	{
 		private readonly UserManager<User> _userManager;
+		private readonly RoleManager<IdentityRole> _roleManager;
+
 		private readonly IMapper _mapper;
 		private readonly ITokenHelper _tokenHelper;
-		public AdminService(UserManager<User> userManager, IMapper mapper, ITokenHelper tokenHelper)
+		public AdminService(UserManager<User> userManager, IMapper mapper, ITokenHelper tokenHelper, RoleManager<IdentityRole> roleManager)
 		{
 			_mapper = mapper;
 			_tokenHelper = tokenHelper;
 			_userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+			_roleManager = roleManager;
 		}
 		public async Task<IResult> GetAllUsers(string token)
 		{
 			var admin = await _tokenHelper.UserByToken(token);
 			if (admin is null) return new Result(false, ErrorCode.NotFound, "Admin not found");
 
-			var users = await _userManager.GetUsersInRoleAsync("User");
+			var role = await _roleManager.FindByNameAsync("User");
+			if (role is null) return new Result(false, ErrorCode.NotFound, "Role \"User\" does not exist");
+
+			var users = await _userManager.GetUsersInRoleAsync(role.Name);
+			var filteredUsers = users.Where(u => !u.IsDeleted).ToList();
+
 			var usersDto = new UserListDto()
 			{
-				Users = _mapper.Map<List<UserProfileDto>>(users)
+				Users = _mapper.Map<List<UserProfileDto>>(filteredUsers)
 			};
 
 			return new Result(true, usersDto);
