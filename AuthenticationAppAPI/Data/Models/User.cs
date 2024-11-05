@@ -10,6 +10,7 @@ namespace Data.Models
 		public DateTime DateOfBirth { get; set; }
 		public bool IsVerified { get; set; }
 		public string? ProfileImage { get; set; }
+		public bool IsDeleted { get; set; }
 	}
 
 }

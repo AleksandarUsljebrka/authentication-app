@@ -26,7 +26,8 @@ namespace AuthenticationAppAPI.Controllers
 			var response = await _authService.LoginUser(loginDto);
 
 			if (!response.Successful) return StatusCode((int)response.ErrorCode, response.ErrorMess);
-
+			if(response.Successful && response.ErrorMess != null) return Ok(response.ErrorMess);
+			
 			return Ok(response.Token);
 		}
 	}

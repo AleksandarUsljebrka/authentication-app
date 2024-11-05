@@ -21,7 +21,9 @@ namespace ServiceLayer.Services
 				UserName = userDto.Email,
 				LastName = userDto.LastName,
 				Email = userDto.Email,
-				IsVerified = false
+				DateOfBirth = userDto.DateOfBirth,
+				IsVerified = false,
+				IsDeleted = false
 			};
 
 			var user = await _userManager.FindByEmailAsync(newUser.Email);
@@ -42,6 +44,8 @@ namespace ServiceLayer.Services
 
 			var user = await _userManager.FindByEmailAsync(loginDto.Email);
 			if (user is null) return new Result(false, ErrorCode.Conflict, "User doesn't exists");
+
+			if(user.IsDeleted) return new Result(true, "Your account has been deleted!");
 
 			bool checkPassword = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 			if (!checkPassword) return new Result(false, ErrorCode.BadRequest, "Password incorrect!");
