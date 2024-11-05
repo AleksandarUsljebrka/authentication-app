@@ -7,6 +7,7 @@ const AuthContext = createContext({
   handleLogout: () => {},
   loadUser:() => {},
   isLoggedIn: false,
+  isLoading:true,
   id: "",
   token: "",
   email: "",
@@ -20,6 +21,7 @@ let initialUser ={
 }
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(initialUser);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -48,6 +50,7 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
     const loadUser = useCallback(async ()=>{
+        setIsLoading(false);
         if(!tokenHelper.isLoggedin()){
             setUser(initialUser)
             return;
@@ -69,7 +72,8 @@ export const AuthContextProvider = ({ children }) => {
         handleLogout:logout,
         loadUser:loadUser,
         isLoggedIn:isLoggedIn,
-        user:user
+        user:user,
+        isLoading:isLoading
     }}
   >{children}</AuthContext.Provider>;
 };

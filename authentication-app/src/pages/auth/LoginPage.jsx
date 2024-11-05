@@ -45,13 +45,13 @@ const LoginUser = () => {
     }})
     return (
         <div className="flex items-start justify-center min-h-screen">
-        <div className="border pt-3 mt-28 rounded-md bg-gray-500  border-gray-900 w-1/2 h-fit ">
-          <h2 className="justify-self-center text-xl md:text-2xl lg:text-3xl text-white">
+        <div className="border pt-3 mt-28 rounded-md bg-gray-300 shadow-2xl text-gray-800  border-gray-900 w-1/2 h-fit ">
+          <h2 className="justify-self-center text-xl md:text-2xl lg:text-3xl">
             User Login
           </h2>
           <form
               onSubmit={formik.handleSubmit} 
-              className="flex flex-col  pt-5 text-white text-sm md:text-xl lg:text-2xl w-4/6 justify-self-center">
+              className="flex flex-col  pt-5 text-sm md:text-xl lg:text-2xl w-4/6 justify-self-center">
               <label className="">Email</label>
               <input
                 className="text-black p-2 mb-2"
@@ -85,7 +85,7 @@ const LoginUser = () => {
             <Button buttonText="Log in" className='mt-6 w-2/5'/>
 
           </form>
-         <div className="mt-10 mb-10 justify-self-center pl-3 pr-3 text-white text-sm md:text-xl lg:text-2xl">
+         <div className="mt-10 mb-10 justify-self-center pl-3 pr-3  text-gray-800 text-sm md:text-xl lg:text-2xl">
               Don't have an account? Register <a href="/register" className="text-blue-400 hover:text-blue-500 transition duration-200">here.</a>
           </div>
     

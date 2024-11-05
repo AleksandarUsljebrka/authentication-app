@@ -8,8 +8,7 @@ export const AuthService = {
             
             return response;
         }catch(error){
-            console.log(error.response);
-            throw new Error(error.response?.data?.message || 'Login failed');
+            return error.response;
         }
     },
     register:async (data) =>{
