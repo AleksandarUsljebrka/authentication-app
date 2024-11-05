@@ -20,7 +20,7 @@ export const AdminService = {
     },
     deleteUser:async (userId, token) =>{  
         try{
-            const response = await axios.get(`${baseUrl}/admin/delete-user?id=${userId}`,
+            const response = await axios.delete(`${baseUrl}/admin/delete-user?id=${userId}`,
                 {
                     headers:{
                         Authorization:`Bearer ${token}`
@@ -30,7 +30,7 @@ export const AdminService = {
             
             return response;
         }catch(error){
-            console.log(error.response);
+            return error.response;
             throw new Error(error.response?.data?.message || 'Login failed');
         }
     },

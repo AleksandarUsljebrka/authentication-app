@@ -8,6 +8,12 @@ import { useAuth } from "./context/authContext";
 import { useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import AllUsersPage from "./pages/AllUsersPage";
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
 function App() {
   const { loadUser, isLoggedIn, user, isLoading } = useAuth();
 
@@ -27,7 +33,7 @@ function App() {
     return (
       <div className="bg-gray-200">
         <Navbar />
-
+        <ToastContainer hideProgressBar={true} autoClose={2000}/>
         <Routes>
           <Route
             path="/"
