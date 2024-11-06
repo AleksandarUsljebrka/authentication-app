@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import { useAuth } from "../../context/authContext";
 import { AuthService } from "../../services/AuthService";
@@ -20,6 +20,7 @@ const loginSchema = yup.object().shape({
 });
 const LoginUser = () => {
   const [error, setError] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const { handleLogin } = useAuth();
   const { login } = AuthService;
@@ -27,6 +28,7 @@ const LoginUser = () => {
   const formik = useFormik({
     initialValues: initialUser,
     validationSchema: loginSchema,
+    validateOnChange:true,
     onSubmit: async (values) => {
       setError("");
       try {
@@ -45,6 +47,12 @@ const LoginUser = () => {
       }
     },
   });
+  useEffect(()=>{
+    
+    setIsFormValid(formik.isValid && formik.dirty);
+  }, [formik.errors, formik.touched, formik.isValid, formik.dirty]);
+
+ 
   return (
     <div className="flex items-start justify-center min-h-screen">
       <div className="border pt-3 mt-28 rounded-md bg-gray-300 shadow-2xl text-gray-800  border-gray-900 w-1/2 h-fit ">
@@ -83,7 +91,7 @@ const LoginUser = () => {
             <p className="text-sm text-red-600 ">{formik.errors.password}</p>
           ) : null}
 
-          <Button buttonText="Log in" className="mt-6 w-2/5" />
+          <Button buttonText="Log in" className="mt-6 w-2/5" disabled={!isFormValid}/>
         </form>
         <div className="mt-10 mb-10 justify-self-center pl-3 pr-3  text-gray-800 text-sm md:text-xl lg:text-2xl">
           Don't have an account? Register{" "}

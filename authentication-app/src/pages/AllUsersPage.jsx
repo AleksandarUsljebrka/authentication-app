@@ -3,17 +3,30 @@ import { AdminService } from "../services/AdminService";
 import { useAuth } from "../context/authContext";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
+import Button from "../components/Button";
+import { string } from "yup";
 
+let initialFilter={
+  startDate:'',
+  endDate:'',
+  email:''
+}
 const AllUsersPage = () => {
   const [users, setUsers] = useState([]);
-
+  const [filterData, setFilterData] = useState({
+    startDate:'',
+    endDate:'',
+    email:''
+  })
   const [fetch, setFetch] = useState(false);
 
-  const { getAllUsers, deleteUser } = AdminService;
+  const { getAllUsers, deleteUser, filterUsers } = AdminService;
   const { user } = useAuth();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [isFilterActive, setIsFilterActive] = useState(false);
+
 
   const handleDelete = (userId) => {
     setUserToDelete(userId);
@@ -25,12 +38,10 @@ const AllUsersPage = () => {
       try {
         const response = await deleteUser(userToDelete, user.token);
         console.log(response);
-        if(response.status >= 300 || response.status<200 ){
-           
+        if(response.status >= 300 || response.status<200 ){           
             toast.error(response.data? response.data:"Failed to delete user");
             throw new Error();
 
-            
         }
 
         toast.success("User deleted successfully!");
@@ -46,20 +57,106 @@ const AllUsersPage = () => {
     const fetchUsers = async () => {
       const response = await getAllUsers(user.token);
       if (response.status >= 300 || response.status < 200) {
-        alert(response.data);
+        toast.error(response.data);
         setFetch(false);
       } else {
         setFetch(false);
         setUsers(response.data.users);
-        console.log(response.data.users);
       }
     };
     fetchUsers();
   }, [fetch]);
 
+  const handleFilterChange = (e)=>{
+    setFilterData(prev =>(
+      {
+        ...prev,
+        [e.target.name]:e.target.value
+      }
+    ))
+  }
+  const handleFilterSubmit = async (e)=>{
+    console.log(filterData);
+    
+    const filterDataWithNullDates = {
+      ...filterData,
+      startDate: filterData.startDate ? filterData.startDate : null,
+      endDate: filterData.endDate ? filterData.endDate : null
+    };
+    setIsFilterActive(true);
+    try{
+      const response = await filterUsers(filterDataWithNullDates, user.token);
+      console.log(response);
+      if (response.status >= 300 || response.status < 200) {
+        toast.error("Filter failed");
+        setFilterData(initialFilter)
+      }else{
+        setUsers(response.data.users);
+      }
+    
+    }catch(error){
+      toast.error("Filter failed")
+    }
+    
+  }
+
+  const handleClearFilter = (e)=>{
+    setFilterData(initialFilter);
+    setIsFilterActive(false);
+  }
+  const isDateFilterEmpty = !filterData.endDate && !filterData.startDate
+  const isEmailSearchEmpty = !filterData.email;
+  
   return (
     <div className="container  min-h-screen mx-auto py-24">
-      <h2 className="text-3xl font-semibold text-center mb-6">Users List</h2>
+      <h2 className="text-3xl font-semibold text-gray-800 text-center mb-6">Users List</h2>
+
+      <div className="flex flex-wrap justify-between gap-6 mb-8 px-2">
+
+        <div className="flex gap-4">
+          
+          <label className="font-semibold text-sm text-gray-800 pt-2">Filter By Date Of Birth:</label>
+          
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+            
+          <input
+            type="date"
+            name="startDate"
+            max={filterData.endDate}
+            value={filterData.startDate}
+            onChange={(e) => handleFilterChange(e)}
+            className="px-4 py-2 border rounded-lg text-sm"
+            placeholder="Start Date"
+            />
+          <input
+            type="date"
+            min={filterData.startDate}
+            name="endDate"
+            value={filterData.endDate}
+            onChange={(e) => handleFilterChange(e)}
+            className="px-4 py-2 border rounded-lg text-sm"
+            placeholder="End Date"
+            />
+            </div>
+          <Button buttonText={!isFilterActive? "Filter":(isDateFilterEmpty?"Filter":"Clear")}
+          disabled={isDateFilterEmpty}
+             className="w-1/5 h-12" onClick={!isFilterActive? handleFilterSubmit:handleClearFilter}/>
+
+        </div>
+
+        <div className="flex gap-4 ">
+          <input
+            type="text"
+            name="email"
+            value={filterData.email}
+            onChange={(e) => handleFilterChange(e)}
+            className="px-4 py-2 border rounded-lg text-sm"
+            placeholder="Search by Email"
+          />
+          <Button buttonText={!isFilterActive? "Search":(isEmailSearchEmpty?"Search":"Clear")} className="w-5/6 " disabled={!filterData.email} 
+          onClick={!isFilterActive ? handleFilterSubmit:handleClearFilter}/>
+        </div>
+      </div>
 
       <Modal
         isOpen={isModalOpen}
@@ -88,7 +185,7 @@ const AllUsersPage = () => {
         </div>
       </Modal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    { users.length>0 ?  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
         {users.map((user) => (
           <div
             key={user.id}
@@ -122,7 +219,11 @@ const AllUsersPage = () => {
             </div>
           </div>
         ))}
+      </div>:
+      <div className="text-3xl text-gray-800 font-semibold flex justify-center items-center">
+        No user matches your filter...
       </div>
+      }
     </div>
   );
 };

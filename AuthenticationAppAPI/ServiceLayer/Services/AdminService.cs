@@ -62,7 +62,13 @@ namespace ServiceLayer.Services
 			var admin = await _tokenHelper.UserByToken(token);
 			if (admin is null) return new Result(false, ErrorCode.NotFound, "Admin not found");
 
-			var usersQuery = _userManager.Users.Where(u => !u.IsDeleted);
+
+			var role = await _roleManager.FindByNameAsync("User");
+			if (role is null) return new Result(false, ErrorCode.NotFound, "Role \"User\" does not exist");
+
+			var usersQuery = _userManager.Users
+				.Where(u => !u.IsDeleted);
+
 
 			if (!string.IsNullOrEmpty(userFilter.Email)) 
 				usersQuery = _userManager.Users.Where(u => u.Email == userFilter.Email);
@@ -78,6 +84,12 @@ namespace ServiceLayer.Services
 			{
 				usersQuery = usersQuery.Where(u => u.DateOfBirth <= userFilter.EndDate.Value);
 			}
+
+
+			var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name);
+			var userInRoleIds = usersInRole.Select(u => u.Id).ToList();
+
+			usersQuery = usersQuery.Where(u => userInRoleIds.Contains(u.Id));
 
 			var users = await usersQuery.ToListAsync();
 

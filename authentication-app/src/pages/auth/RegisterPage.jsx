@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import Button from "../../components/Button";
 import { AuthService } from "../../services/AuthService";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +25,11 @@ const registrationSchema = yup.object().shape({
 
 const RegisterUser = () => {
   const { register } = AuthService;
+
   const [error, setError] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
+
+
   const navigate = useNavigate();
 
   const formik = useFormik({
@@ -52,6 +56,12 @@ const RegisterUser = () => {
       }
     },
   });
+
+  useEffect(()=>{
+    
+    setIsFormValid(formik.isValid && formik.dirty);
+  }, [formik.errors, formik.touched, formik.isValid, formik.dirty]);
+
   return (
     <div className="flex items-start justify-center min-h-screen">
       <div className="border pt-3 mt-28 rounded-md bg-gray-300  text-gray-800  border-gray-900 w-3/5 h-fit shadow-2xl">
@@ -152,7 +162,7 @@ const RegisterUser = () => {
                 </p>
               ) : null}
             </div>
-            <Button buttonText="Register" className="w-2/5  h-14 mt-6" />
+            <Button buttonText="Register" className="w-2/5  h-14 mt-6" disabled={!isFormValid}/>
           </div>
         </form>
         <div className="mt-10 mb-10 justify-self-center  text-gray-800 text-sm md:text-xl lg:text-2xl">
