@@ -11,7 +11,7 @@ const Navbar = () => {
    }
     return (
       <>
-      <nav className="bg-gray-400 fixed top-0 left-0 w-screen flex justify-between items-center">
+      <nav className="bg-gray-400 z-10 fixed top-0 left-0 w-screen flex justify-between items-center">
         <div className="flex ml-10">
         <img
           src={iconLogo}
@@ -23,7 +23,7 @@ const Navbar = () => {
             Authentication App
           </h2>
         </div>
-        <ul className="flex  w-2/5 text-gray-800 h-20 items-center lg:text-2xl md:text-2xl sm:text-lg text-sm relative">
+        <ul className="pr-3 flex  w-2/5 text-gray-800 h-20 items-center lg:text-2xl md:text-2xl sm:text-lg text-sm relative">
             {!isLoggedIn && <li className="relative group m-auto">
               <a
                 href="/login"
@@ -48,6 +48,15 @@ const Navbar = () => {
                 className="hover:text-gray-700 transition duration-300"
               >
                 Home
+              </a>
+              <span className="absolute left-0 bottom-0 h-[2px] bg-gray-600 w-0 transition-width duration-300 group-hover:w-full"></span>
+            </li>}
+            {isLoggedIn && <li className="relative group m-auto">
+              <a
+                href="/my-profile"
+                className="hover:text-gray-700 transition duration-300"
+              >
+                My Profile
               </a>
               <span className="absolute left-0 bottom-0 h-[2px] bg-gray-600 w-0 transition-width duration-300 group-hover:w-full"></span>
             </li>}

@@ -12,7 +12,7 @@ namespace ServiceLayer.Services.Interfaces
 	public  interface IUserService
 	{
 		Task<IResult> GetUserProfile(string token);
-		Task<IResult> UpdateUser(string token, UserProfileDto userDto);
+		Task<IResult> UpdateUser(string token, UpdateUserDto userDto);
 		Task<IResult> GetProfileImage(string token);
 		Task<IResult> UpdateProfileImage(FormFileImageDto formFile, string token);
 		Task<IResult> UpdatePassword(PasswordDto passwordDto, string token);

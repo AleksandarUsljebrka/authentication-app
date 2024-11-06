@@ -21,7 +21,7 @@ namespace ServiceLayer.Services
 				UserName = userDto.Email,
 				LastName = userDto.LastName,
 				Email = userDto.Email,
-				DateOfBirth = userDto.DateOfBirth,
+				DateOfBirth = userDto.DateOfBirth.Date,
 				IsVerified = false,
 				IsDeleted = false
 			};

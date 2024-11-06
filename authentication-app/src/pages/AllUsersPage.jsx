@@ -92,9 +92,9 @@ const AllUsersPage = () => {
         {users.map((user) => (
           <div
             key={user.id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105"
+            className="bg-white h- rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105"
           >
-            <div className="p-6">
+            <div className="px-6 pt-6 pb-2 h-full flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="bg-gray-300 w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-semibold mr-4">
                   {user.firstName.charAt(0)}
@@ -110,7 +110,8 @@ const AllUsersPage = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex justify-center items-center mt-4">
+              <div className="flex-grow"></div>
+              <div className="flex justify-center mt-4">
                 <button
                   onClick={() => handleDelete(user.id)}
                   className="bg-red-500 text-white px-4 py-2 rounded-full text-sm hover:bg-red-600 focus:outline-none"

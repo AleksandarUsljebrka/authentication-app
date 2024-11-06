@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using ServiceLayer.DTOs.Image;
 using ServiceLayer.DTOs.User;
 using ServiceLayer.Services.Interfaces;
@@ -32,7 +34,7 @@ namespace AuthenticationAppAPI.Controllers
 		}
 
 		[HttpPut("my-profile")]
-		public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto userProfileDto)
+		public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserDto userProfileDto)
 		{
 			try
 			{
@@ -60,11 +62,8 @@ namespace AuthenticationAppAPI.Controllers
 
 				var result = await _userService.GetProfileImage(token);
 
-				if (!result.Successful)
-				{
-					return StatusCode((int)result.ErrorCode, result.ErrorMess);
-				}
-
+				if (!result.Successful) return StatusCode((int)result.ErrorCode, result.ErrorMess);
+				if (result.Successful && !result.ErrorMess.IsNullOrEmpty()) return Ok(result.ErrorMess);
 				return Ok(result.Dto);
 			}
 			catch (Exception)
@@ -72,7 +71,6 @@ namespace AuthenticationAppAPI.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
-
 		[HttpPut("profile-image")]
 
 		public async Task<IActionResult> UpdateProfileImage([FromForm] FormFileImageDto profilImage)

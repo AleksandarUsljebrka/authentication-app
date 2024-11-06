@@ -12,6 +12,8 @@ import AllUsersPage from "./pages/AllUsersPage";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from 'react-modal';
+import MyProfilePage from "./pages/MyProfile";
+import Loading from "./components/Loading";
 
 Modal.setAppElement('#root');
 function App() {
@@ -25,9 +27,7 @@ function App() {
   console.log(isAdmin);
   if (isLoading)
     return (
-      <div className="text-3xl text-gray-900 bg-gray-200 flex items-center">
-        Loading ....
-      </div>
+     <Loading/>
     );
   else
     return (
@@ -38,6 +38,10 @@ function App() {
           <Route
             path="/"
             element={isLoggedIn ? <HomePage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/my-profile"
+            element={isLoggedIn ? <MyProfilePage /> : <Navigate to="/login" />}
           />
           <Route
             path="/login"

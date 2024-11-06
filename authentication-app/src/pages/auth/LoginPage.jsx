@@ -34,7 +34,7 @@ const LoginUser = () => {
         
         if (response.status >= 300 || response.status < 200) {
           setError(response.data);
-          alert(response.data);
+          toast.error(response.data);
         } else if (response.data === "DELETED") {
           toast.error("Your account has been deleted");
         } else {

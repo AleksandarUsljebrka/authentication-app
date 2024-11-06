@@ -23,7 +23,7 @@ namespace ServiceLayer.Services
 
 			return new Result(true, userDto);
 		}
-		public async Task<IResult> UpdateUser(string token, UserProfileDto userDto)
+		public async Task<IResult> UpdateUser(string token, UpdateUserDto userDto)
 		{
 			if (userDto is null) return new Result(false, ErrorCode.BadRequest);
 
@@ -47,7 +47,7 @@ namespace ServiceLayer.Services
 			var user = await _tokenHelper.UserByToken(token);
 			if (user == null) return new Result(false, ErrorCode.NotFound, "No user found");
 
-			if (user.ProfileImage == null) return new Result(true);
+			if (user.ProfileImage == null) return new Result(true, "NO_IMAGE");
 
 			byte[] image = await _imageHelper.GetProfileImage(user.ProfileImage);
 			if (image == null)
