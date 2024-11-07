@@ -4,7 +4,6 @@ import { useAuth } from "../context/authContext";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
 import Button from "../components/Button";
-import { string } from "yup";
 
 let initialFilter={
   startDate:'',
@@ -16,17 +15,23 @@ const AllUsersPage = () => {
   const [filterData, setFilterData] = useState({
     startDate:'',
     endDate:'',
-    email:''
   })
+  const [email, setEmailData] = useState('');
+
   const [fetch, setFetch] = useState(false);
 
-  const { getAllUsers, deleteUser, filterUsers } = AdminService;
+  const { getAllUsers, deleteUser, filterUsers, searchByEmail } = AdminService;
   const { user } = useAuth();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  
   const [isFilterActive, setIsFilterActive] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 8
 
   const handleDelete = (userId) => {
     setUserToDelete(userId);
@@ -53,21 +58,25 @@ const AllUsersPage = () => {
       }
     }
   };
+  const fetchUsers = async () => {
+    const response = await getAllUsers(user.token, currentPage, pageSize);
+    if (response.status >= 300 || response.status < 200) {
+      toast.error(response.data);
+      setFetch(false);
+    } else {
+      setFetch(false);
+      setUsers(response.data.users);
+      setTotalPages(Math.ceil(response.data.count/pageSize));
+    }
+  };
   useEffect(() => {
-    const fetchUsers = async () => {
-      const response = await getAllUsers(user.token);
-      if (response.status >= 300 || response.status < 200) {
-        toast.error(response.data);
-        setFetch(false);
-      } else {
-        setFetch(false);
-        setUsers(response.data.users);
-      }
-    };
     fetchUsers();
-  }, [fetch]);
+  }, [fetch, currentPage]);
+
+
 
   const handleFilterChange = (e)=>{
+    setIsFilterActive(false);
     setFilterData(prev =>(
       {
         ...prev,
@@ -75,11 +84,12 @@ const AllUsersPage = () => {
       }
     ))
   }
+  const handleEmailChange = (e)=>{
+    setIsSearchActive(false);
+    setEmailData(e.target.value);
+  }
   const handleFilterSubmit = async (e)=>{
-    console.log(filterData);
-    
     const filterDataWithNullDates = {
-      ...filterData,
       startDate: filterData.startDate ? filterData.startDate : null,
       endDate: filterData.endDate ? filterData.endDate : null
     };
@@ -90,6 +100,7 @@ const AllUsersPage = () => {
       if (response.status >= 300 || response.status < 200) {
         toast.error("Filter failed");
         setFilterData(initialFilter)
+
       }else{
         setUsers(response.data.users);
       }
@@ -100,15 +111,49 @@ const AllUsersPage = () => {
     
   }
 
+  const handleSearchSubmit = async (e)=>{
+    setIsSearchActive(true)
+    try{
+      const response = await searchByEmail(email, user.token);
+      console.log(response);
+      if (response.status >= 300 || response.status < 200) {
+        toast.error("Search failed");
+        setEmailData('');
+
+      }else{
+      setUsers([response.data])
+      
+      }
+    
+    }catch(error){
+      toast.error("Search failed")
+    }
+    
+  }
+
   const handleClearFilter = (e)=>{
     setFilterData(initialFilter);
     setIsFilterActive(false);
+    setFetch(true);
   }
+const handleClearSearch =()=>{
+  setEmailData('');
+  setIsSearchActive(false);
+  setFetch(true);
+
+}
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+  
   const isDateFilterEmpty = !filterData.endDate && !filterData.startDate
-  const isEmailSearchEmpty = !filterData.email;
+  const isEmailSearchEmpty = !email.email;
   
   return (
-    <div className="container  min-h-screen mx-auto py-24">
+    <div className="container  min-h-screen mx-auto pt-24">
       <h2 className="text-3xl font-semibold text-gray-800 text-center mb-6">Users List</h2>
 
       <div className="flex flex-wrap justify-between gap-6 mb-8 px-2">
@@ -138,7 +183,7 @@ const AllUsersPage = () => {
             placeholder="End Date"
             />
             </div>
-          <Button buttonText={!isFilterActive? "Filter":(isDateFilterEmpty?"Filter":"Clear")}
+          <Button buttonText={!isFilterActive? "Filter":"Clear"}
           disabled={isDateFilterEmpty}
              className="w-1/5 h-12" onClick={!isFilterActive? handleFilterSubmit:handleClearFilter}/>
 
@@ -148,13 +193,13 @@ const AllUsersPage = () => {
           <input
             type="text"
             name="email"
-            value={filterData.email}
-            onChange={(e) => handleFilterChange(e)}
+            value={email}
+            onChange={(e) => handleEmailChange(e)}
             className="px-4 py-2 border rounded-lg text-sm"
             placeholder="Search by Email"
           />
-          <Button buttonText={!isFilterActive? "Search":(isEmailSearchEmpty?"Search":"Clear")} className="w-5/6 " disabled={!filterData.email} 
-          onClick={!isFilterActive ? handleFilterSubmit:handleClearFilter}/>
+          <Button buttonText={!isSearchActive? "Search":"Clear"} className="w-5/6 " disabled={!email} 
+          onClick={!isSearchActive ? handleSearchSubmit:handleClearSearch}/>
         </div>
       </div>
 
@@ -185,12 +230,14 @@ const AllUsersPage = () => {
         </div>
       </Modal>
 
-    { users.length>0 ?  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
+    { users.length>0 ? 
+    <>
+     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
         {users.map((user) => (
           <div
             key={user.id}
             className="bg-white h- rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105"
-          >
+            >
             <div className="px-6 pt-6 pb-2 h-full flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="bg-gray-300 w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-semibold mr-4">
@@ -212,14 +259,33 @@ const AllUsersPage = () => {
                 <button
                   onClick={() => handleDelete(user.id)}
                   className="bg-red-500 text-white px-4 py-2 rounded-full text-sm hover:bg-red-600 focus:outline-none"
-                >
+                  >
                   Delete User
                 </button>
               </div>
             </div>
           </div>
         ))}
-      </div>:
+      </div>
+      <div className="flex justify-between items-center mt-4">
+        <button
+          className={`px-4 py-2 bg-gray-300 rounded-full ${currentPage === 1 ? "cursor-not-allowed opacity-50" : ""}`}
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          &lt; Prev
+        </button>
+        <span className="text-gray-700">{`Page ${currentPage} of ${totalPages}`}</span>
+        <button
+          className={`px-4 py-2 bg-gray-300 rounded-full ${currentPage === totalPages ? "cursor-not-allowed opacity-50" : ""}`}
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next &gt;
+        </button>
+      </div>
+      </>
+      :
       <div className="text-3xl text-gray-800 font-semibold flex justify-center items-center">
         No user matches your filter...
       </div>

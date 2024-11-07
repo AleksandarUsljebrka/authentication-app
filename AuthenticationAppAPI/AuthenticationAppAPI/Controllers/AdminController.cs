@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServiceLayer.DTOs;
 using ServiceLayer.DTOs.User;
 using ServiceLayer.Services;
 using ServiceLayer.Services.Interfaces;
@@ -12,16 +13,18 @@ namespace AuthenticationAppAPI.Controllers
 	public class AdminController(IAdminService _adminService) : Controller
 	{
 		[HttpGet("all-users")]
-		public async Task<IActionResult>GetAllUsers()
+		public async Task<IActionResult> GetAllUsers([FromQuery]PaginationDto paginationDto)
 		{
 			try
 			{
 				var token = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").LastOrDefault();
-				var result = await _adminService.GetAllUsers(token);
+				var result = await _adminService.GetAllUsers(token, paginationDto);
 
 				if (!result.Successful) return StatusCode((int)result.ErrorCode, result.ErrorMess);
 
-				return Ok(result.Dto);
+				var users = result.UserListDto.Users;
+				var count = result.UserTotalCount;
+				return Ok(new {users, count});
 			}
 			catch (Exception ex)
 			{
@@ -54,7 +57,27 @@ namespace AuthenticationAppAPI.Controllers
 			{
 				var token = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").LastOrDefault();
 				
-				var result = await _adminService.FilterUsers(userFilter, token);
+				var result = await _adminService.FilterUsersByDate(userFilter, token);
+
+				if (!result.Successful) return StatusCode((int)result.ErrorCode, result.ErrorMess);
+
+				return Ok(result.Dto);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(StatusCodes.Status500InternalServerError);
+			}
+		}
+
+		[HttpGet("search")]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> SearchByEmail([FromQuery]string email)
+		{
+			try
+			{
+				var token = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").LastOrDefault();
+
+				var result = await _adminService.SearchUserByEmail(email, token);
 
 				if (!result.Successful) return StatusCode((int)result.ErrorCode, result.ErrorMess);
 

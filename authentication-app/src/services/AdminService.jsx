@@ -2,16 +2,15 @@ import axios from "axios";
 import { baseUrl } from "../config/config";
 
 export const AdminService = {
-    getAllUsers:async (token) =>{  
+    getAllUsers:async (token, pageNumber,pageSize) =>{  
         try{
-            const response = await axios.get(`${baseUrl}/admin/all-users`,
+            const response = await axios.get(`${baseUrl}/admin/all-users?pageNumber=${pageNumber}&pageSize=${pageSize}`,
                 {
                     headers:{
                         Authorization:`Bearer ${token}`
                     }
                 }
             );
-            
             return response;
         }catch(error){
             console.log(error.response);
@@ -27,7 +26,6 @@ export const AdminService = {
                     }
                 }
             );
-            
             return response;
         }catch(error){
             return error.response;
@@ -37,6 +35,21 @@ export const AdminService = {
     filterUsers:async (data, token) =>{  
         try{
             const response = await axios.post(`${baseUrl}/admin/filter`,data,
+                {
+                    headers:{
+                        Authorization:`Bearer ${token}`
+                    }
+                }
+            );
+            
+            return response;
+        }catch(error){
+            return error.response;
+        }
+    },
+    searchByEmail:async (data, token) =>{  
+        try{
+            const response = await axios.get(`${baseUrl}/admin/search?email=${data}`,
                 {
                     headers:{
                         Authorization:`Bearer ${token}`

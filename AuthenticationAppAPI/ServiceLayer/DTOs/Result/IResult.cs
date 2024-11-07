@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ServiceLayer.DTOs.User;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,9 @@ namespace ServiceLayer.DTOs.Result
 		IDTO Dto { get; set; }
 		ErrorCode ErrorCode { get; set; }
 		string Token { get; set; }
+		int UserTotalCount { get; set; }
+		UserListDto UserListDto { get; set; }
+
 		
 	}
 }

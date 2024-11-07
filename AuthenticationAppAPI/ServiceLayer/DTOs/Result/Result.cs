@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using ServiceLayer.DTOs.User;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace ServiceLayer.DTOs.Result
 		public IDTO Dto { get; set; }
 		public ErrorCode ErrorCode { get; set; }
 		public string Token { get; set; }
+		public int UserTotalCount { get; set; }
+		public UserListDto UserListDto { get; set; }
 
 		public Result(bool successful, ErrorCode erCode, string mess)
 		{
@@ -41,6 +44,12 @@ namespace ServiceLayer.DTOs.Result
 		{
 			Successful = successful;
 			Dto = dto;
+		}
+		public Result(bool successful, UserListDto userListDto, int userCount)
+		{
+			Successful = successful;
+			UserTotalCount = userCount;
+			UserListDto = userListDto;
 		}
 	}
 }

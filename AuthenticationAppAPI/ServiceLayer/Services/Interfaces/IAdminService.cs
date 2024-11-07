@@ -1,4 +1,5 @@
-﻿using ServiceLayer.DTOs.Result;
+﻿using ServiceLayer.DTOs;
+using ServiceLayer.DTOs.Result;
 using ServiceLayer.DTOs.User;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,9 @@ namespace ServiceLayer.Services.Interfaces
 {
 	public interface IAdminService
 	{
-		public Task<IResult> GetAllUsers(string token);
+		public Task<IResult> GetAllUsers(string token, PaginationDto paginationDto);
 		public Task<IResult> DeleteUser(string userId, string token);
-		public Task<IResult> FilterUsers(UserFilter userFilter, string token);
-
+		public Task<IResult> FilterUsersByDate(UserFilter userFilter, string token);
+		Task<IResult> SearchUserByEmail(string email, string token);
 	}
 }
