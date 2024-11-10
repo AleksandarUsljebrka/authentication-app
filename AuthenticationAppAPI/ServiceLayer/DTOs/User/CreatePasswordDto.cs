@@ -6,5 +6,9 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer.DTOs.User
 {
-		public record UserSessionDto(string Id, string Email, string Role, bool IsGoogleLogedIn);	
+	public class CreatePasswordDto
+	{
+		public string Password { get; set; }
+		public string ConfirmPassword { get; set; }
+	}
 }

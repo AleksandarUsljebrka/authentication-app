@@ -9,5 +9,6 @@ namespace ServiceLayer.DTOs.User
 		public string LastName { get; set; }
 		public DateTime DateOfBirth { get; set; }
 		public bool IsVerified { get; set; }
+		public bool IsGoogleLogin { get; set; }
 	}
 }

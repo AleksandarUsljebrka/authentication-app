@@ -24,7 +24,8 @@ namespace ServiceLayer.Helpers.Token
             {
                 new Claim("id", user.Id),
                 new Claim("email", user.Email),
-                new Claim("role", user.Role)
+                new Claim("role", user.Role),
+                new Claim("isGoogleLogedIn", user.IsGoogleLogedIn? "google":"form")
             };
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],

@@ -85,5 +85,20 @@ namespace ServiceLayer.Services
 
 			return new Result(true);
 		}
+
+		//public async Task<IResult> CreatePassword(CreatePasswordDto passwordDto, string token)
+		//{
+		//	var user = await _tokenHelper.UserByToken(token);
+		//	if (user == null) return new Result(false, ErrorCode.NotFound, "No user found");
+
+		//	if (!passwordDto.Password.Equals(passwordDto.ConfirmPassword)) return new Result(false, ErrorCode.BadRequest, "Password is not confirmed rigth!");
+
+		//	var currentPasswordHash = user.PasswordHash
+
+		//	var passwordCheck = await _userManager.ChangePasswordAsync(user, passwordDto.OldPassword, passwordDto.NewPassword);
+		//	if (!newPasswordCheck.Succeeded) return new Result(false, ErrorCode.BadRequest, "Could not change password");
+
+		//	return new Result(true);
+		//}
 	}
 }

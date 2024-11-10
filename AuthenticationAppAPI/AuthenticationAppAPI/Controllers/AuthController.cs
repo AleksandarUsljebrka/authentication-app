@@ -31,5 +31,26 @@ namespace AuthenticationAppAPI.Controllers
 			
 			return Ok(response.Token);
 		}
+
+		[HttpPost("google-login")]
+		public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto idToken)
+		{
+			var result = await _authService.GoogleLogin(idToken);
+
+			try
+			{
+				if (!result.Successful)
+				{
+					return StatusCode((int)result.ErrorCode, result.ErrorMess);
+				}
+				else
+					return Ok(result.Token);
+			}
+			catch (Exception)
+			{
+				return StatusCode(StatusCodes.Status500InternalServerError);
+
+			}
+		}
 	}
 }

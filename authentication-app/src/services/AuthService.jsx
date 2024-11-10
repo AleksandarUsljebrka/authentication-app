@@ -22,6 +22,23 @@ export const AuthService = {
             return error.response;
            
         }
-    }
+    },
+    googleLogin:async (data) =>{  
+        try{
+            const response = await axios.post(`${baseUrl}/auth/google-login`,{
+                idToken: data
+            },
+                {
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                }
+            );
+            
+            return response;
+        }catch(error){
+            return error.response;
+        }
+    },
    
 }

@@ -72,18 +72,26 @@ const getTokenId = () =>{
     if(decoded && decoded.id) return decoded.id;
     return null;
 }
+const getGoogleLogedIn = () =>{
+  const decoded = getToken();
+  if(decoded && decoded.isGoogleLogedIn) return decoded.isGoogleLogedIn;
+  return null;
+}
+
 const getUser = () => {
   const role = getTokenRole();
   const email = getTokenEmail();
   const token = getRawToken();
   const id = getTokenId();
+  const isGoogleLogedIn = getGoogleLogedIn();
 
   if (role && email) {
     const user = {
       role: role,
       email: email,
       token:token,
-      id:id
+      id:id,
+      isGoogleLogedIn:isGoogleLogedIn
     };
     return user;
   }

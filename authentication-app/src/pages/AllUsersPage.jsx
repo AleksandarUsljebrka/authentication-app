@@ -158,7 +158,7 @@ const handleClearSearch =()=>{
 
       <div className="flex flex-wrap justify-between gap-6 mb-8 px-2">
 
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           
           <label className="font-semibold text-sm text-gray-800 pt-2">Filter By Date Of Birth:</label>
           
@@ -185,7 +185,7 @@ const handleClearSearch =()=>{
             </div>
           <Button buttonText={!isFilterActive? "Filter":"Clear"}
           disabled={isDateFilterEmpty}
-             className="w-1/5 h-12" onClick={!isFilterActive? handleFilterSubmit:handleClearFilter}/>
+             className="w-20 sm:h-10 lg:h-12 h-10" onClick={!isFilterActive? handleFilterSubmit:handleClearFilter}/>
 
         </div>
 

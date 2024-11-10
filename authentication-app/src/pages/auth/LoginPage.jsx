@@ -5,7 +5,10 @@ import { AuthService } from "../../services/AuthService";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "react-toastify";
-
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
+import GoogleButton from "../../components/GoogleButton";
+// import g from 'src/assets/google.p';
 let initialUser = {
   email: "",
   password: "",
@@ -21,9 +24,9 @@ const loginSchema = yup.object().shape({
 const LoginUser = () => {
   const [error, setError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
-
+ 
   const { handleLogin } = useAuth();
-  const { login } = AuthService;
+  const { login, googleLogin } = AuthService;
 
   const formik = useFormik({
     initialValues: initialUser,
@@ -47,11 +50,29 @@ const LoginUser = () => {
       }
     },
   });
+
   useEffect(()=>{
     
     setIsFormValid(formik.isValid && formik.dirty);
   }, [formik.errors, formik.touched, formik.isValid, formik.dirty]);
 
+  
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async ({ code }) => {
+      const tokens = await axios.post('https://localhost:7235/auth/google-login', {  // http://localhost:3001/auth/google backend that will exchange the code
+        code,
+      });
+      if(tokens.status<200 || tokens.status>=300){
+        toast.error("Google login failed");
+        return;
+      }
+
+      await handleLogin(tokens.data);
+      console.log(tokens);
+    },
+    flow: 'auth-code',
+  });
+ 
  
   return (
     <div className="flex items-start justify-center min-h-screen">
@@ -91,7 +112,27 @@ const LoginUser = () => {
             <p className="text-sm text-red-600 ">{formik.errors.password}</p>
           ) : null}
 
-          <Button buttonText="Log in" className="mt-6 w-2/5" disabled={!isFormValid}/>
+          <div className="h-">
+            <Button
+              buttonText="Log in"
+              className="mt-6 w-full"
+              disabled={!isFormValid}
+            />
+          <GoogleButton onClick={()=>handleGoogleLogin()}
+            />
+            {/* <GoogleLogin
+            className='w-full'
+              onSuccess={(response) => {
+                const login = async () => {
+                  const resp = await googleLogin(response.credential);
+                  console.log(resp);
+                  await handleLogin(resp.data);
+                };
+                login();
+              }}
+              onFailure={() => {}}
+            /> */}
+          </div>
         </form>
         <div className="mt-10 mb-10 justify-self-center pl-3 pr-3  text-gray-800 text-sm md:text-xl lg:text-2xl">
           Don't have an account? Register{" "}

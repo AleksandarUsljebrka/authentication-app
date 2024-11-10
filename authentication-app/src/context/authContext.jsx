@@ -8,6 +8,7 @@ const AuthContext = createContext({
   loadUser:() => {},
   isLoggedIn: false,
   isLoading:true,
+  isGoogleLogedIn:false,
   id: "",
   token: "",
   email: "",
@@ -17,6 +18,7 @@ let initialUser ={
     email:'',
     token:'',
     role:'',
+    isGoogleLogedIn:false,
     id:''
 }
 export const AuthContextProvider = ({ children }) => {
@@ -24,6 +26,7 @@ export const AuthContextProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isGoogleLogedIn, setIsGoogleLogedIn] = useState(false);
 
     const navigate = useNavigate();
     const handleLogin = async (data) => {
@@ -32,7 +35,9 @@ export const AuthContextProvider = ({ children }) => {
 
             const user = tokenHelper.getUser();
 
-            setUser(user)
+            setUser(user);
+            setIsGoogleLogedIn(user.isGoogleLogedIn ==='google');
+
             setIsLoggedIn(true);
         }catch(error){
             alert("Login Failed!")
@@ -62,6 +67,7 @@ export const AuthContextProvider = ({ children }) => {
         }
 
         setIsLoggedIn(tokenHelper.isLoggedin());
+        setIsGoogleLogedIn(user.isGoogleLogedIn==='google')
         const userData = tokenHelper.getUser();
         setUser(userData);
     }, [])
@@ -72,6 +78,7 @@ export const AuthContextProvider = ({ children }) => {
         handleLogout:logout,
         loadUser:loadUser,
         isLoggedIn:isLoggedIn,
+        isGoogleLogedIn:isGoogleLogedIn,
         user:user,
         isLoading:isLoading
     }}
