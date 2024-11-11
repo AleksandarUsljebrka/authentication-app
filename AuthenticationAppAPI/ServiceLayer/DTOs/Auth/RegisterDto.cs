@@ -25,5 +25,7 @@ namespace ServiceLayer.DTOs.User
 		[Required]
 		[DataType(DataType.Password)]
 		public string Password { get; set; }
+
+		public string? ClientUri { get; set; }
 	}
 }

@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using ServiceLayer.DTOs.Auth;
 using ServiceLayer.DTOs.User;
+using ServiceLayer.Services;
 using ServiceLayer.Services.Interfaces;
 
 namespace AuthenticationAppAPI.Controllers
@@ -17,7 +18,7 @@ namespace AuthenticationAppAPI.Controllers
 			var response = await _authService.CreateUser(registerDto);
 
 			if (!response.Successful) return StatusCode((int)response.ErrorCode, response.ErrorMess);
-			
+
 			return Ok();
 		}
 		[HttpPost]
@@ -27,8 +28,8 @@ namespace AuthenticationAppAPI.Controllers
 			var response = await _authService.LoginUser(loginDto);
 
 			if (!response.Successful) return StatusCode((int)response.ErrorCode, response.ErrorMess);
-			if(response.Successful && !response.ErrorMess.IsNullOrEmpty()) return Ok(response.ErrorMess);
-			
+			if (response.Successful && !response.ErrorMess.IsNullOrEmpty()) return Ok(response.ErrorMess);
+
 			return Ok(response.Token);
 		}
 
@@ -52,5 +53,28 @@ namespace AuthenticationAppAPI.Controllers
 
 			}
 		}
+
+		[HttpPost("verify-email")]
+		public async Task<IActionResult> VerifyEmail([FromBody]VerifyEmailDto verifyEmailDto)
+		{
+			var result = await _authService.VerifyEmail(verifyEmailDto.Token, verifyEmailDto.Email);
+
+			try
+			{
+				if (!result.Successful)
+				{
+					return StatusCode((int)result.ErrorCode, result.ErrorMess);
+				}
+				else
+					return Ok();
+			}
+			catch (Exception)
+			{
+				return StatusCode(StatusCodes.Status500InternalServerError);
+
+			}
+		}
 	}
+
+	
 }

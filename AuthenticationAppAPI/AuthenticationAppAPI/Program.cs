@@ -15,6 +15,8 @@ builder.Services.AddCustomServices(builder.Configuration);
 
 builder.Services.AddHttpClient();
 
+//builder.Services.AddFluentEmail(builder.Configuration);
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

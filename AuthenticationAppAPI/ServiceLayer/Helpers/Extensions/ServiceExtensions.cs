@@ -13,6 +13,7 @@ using ServiceLayer.Helpers.Image;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ServiceLayer.Helpers.Email;
 
 namespace ServiceLayer.Helpers.Extensions
 {
@@ -36,7 +37,8 @@ namespace ServiceLayer.Helpers.Extensions
 			}
 			)
 			.AddEntityFrameworkStores<ApplicationDbContext>()
-			.AddSignInManager();
+			.AddSignInManager()
+			.AddDefaultTokenProviders();
 
 
 			var mapperConfig = new MapperConfiguration(mc =>
@@ -52,7 +54,7 @@ namespace ServiceLayer.Helpers.Extensions
 			services.AddScoped<IAdminService, AdminService>();
 			services.AddScoped<ITokenHelper, TokenHelper>();
 			services.AddScoped<IImageHelper, ImageHelper>();
-
+			services.AddScoped<IEmailSender, EmailSender>();
 			services.AddAuthentication(opt =>
 			{
 				opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

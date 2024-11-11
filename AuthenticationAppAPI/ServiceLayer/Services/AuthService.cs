@@ -11,12 +11,32 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using AutoMapper;
+using Microsoft.AspNetCore.WebUtilities;
+using ServiceLayer.Helpers.Email;
+using Microsoft.AspNetCore.Mvc;
+using System.Web;
 
 
 namespace ServiceLayer.Services
 {
-	public class AuthService(IHttpClientFactory _httpClientFactory,IConfiguration configuration, UserManager<User> _userManager, ITokenHelper _tokenHelper):IAuthService
+	public class AuthService : IAuthService
 	{
+		private readonly ITokenHelper _tokenHelper;
+		private readonly IMapper _mapper;
+		private readonly IEmailSender _emailSender;
+		private readonly IHttpClientFactory _httpClientFactory;
+		private readonly IConfiguration _configuration;
+		private readonly UserManager<User> _userManager;
+		public AuthService(IEmailSender _emailSender, IHttpClientFactory _httpClientFactory, IConfiguration _configuration, UserManager<User> _userManager, ITokenHelper _tokenHelper)
+		{
+			this._emailSender = _emailSender;
+			this._httpClientFactory = _httpClientFactory;
+			this._configuration = _configuration;
+			this._userManager = _userManager;
+			this._tokenHelper = _tokenHelper;
+		}
+
 		public async Task<IResult> CreateUser(RegisterDto userDto)
 		{
 			if (userDto is null) return new Result(false, ErrorCode.BadRequest, "Model is empty!");
@@ -39,7 +59,17 @@ namespace ServiceLayer.Services
 			var createUser = await _userManager.CreateAsync(newUser!, userDto.Password!);
 			if (!createUser.Succeeded) return new Result(false, ErrorCode.InternalServerError, "Error during creating account!");
 
-			var createRole = await _userManager.AddToRoleAsync(newUser, "User");
+			var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+
+			var verificationLink = $"{_configuration["AppSettings:FrontendUrl"]}/verify-email?token={token}&email={newUser.Email}";
+
+			// Send email with verification link
+			var subject = "Please verify your email address";
+			var message = $"Please click the following link to verify your email: <a href=\"{verificationLink}\">Verify Email</a>";
+
+			_emailSender.SendEmail(message, newUser.Email, "Approval message");
+
+			await _userManager.AddToRoleAsync(newUser, "User");
 
 			return new Result(true);
 
@@ -52,21 +82,18 @@ namespace ServiceLayer.Services
 			var user = await _userManager.FindByEmailAsync(loginDto.Email);
 			if (user is null) return new Result(false, ErrorCode.Conflict, "User doesn't exists");
 
-			if(user.IsDeleted) return new Result(true, "DELETED");
+			if (user.IsDeleted) return new Result(true, "DELETED");
 
-			if(user.IsGoogleLogin && user.PasswordHash.IsNullOrEmpty()) return new Result(false, ErrorCode.BadRequest, "Password incorrect!You're registered by google!");
+			if (user.IsGoogleLogin && user.PasswordHash.IsNullOrEmpty()) return new Result(false, ErrorCode.BadRequest, "Password incorrect!You're registered by google!");
 
-			bool checkPassword = await _userManager.CheckPasswordAsync(user, loginDto.Password);
-			if (!checkPassword) return new Result(false, ErrorCode.BadRequest, "Password incorrect!");
+			if (!await _userManager.CheckPasswordAsync(user, loginDto.Password)) return new Result(false, ErrorCode.BadRequest, "Password incorrect!");
 
-			//it returns a list of roles
-			var userRoles = await _userManager.GetRolesAsync(user);
-			if (!userRoles.Any()) return new Result(false, ErrorCode.NotFound, "No roles found");
+			if (!user.EmailConfirmed) return new Result(true, "NOT_VERIFIED");
 
-			//I'll take first one because I assume that user have only one role
-			var userSession = new UserSessionDto(user.Id, user.Email, userRoles.First(), user.IsGoogleLogin);
-			string token = _tokenHelper.GenerateToken(userSession);
-			return new Result(true, token!);
+			
+
+			return await CompleteLoginHelper(user);
+			
 		}
 
 		public async Task<IResult> GoogleLogin(GoogleLoginDto googleLoginDto)
@@ -75,12 +102,12 @@ namespace ServiceLayer.Services
 
 			if (string.IsNullOrEmpty(code))
 			{
-				return new Result(false,ErrorCode.BadRequest, "Code is required.");
+				return new Result(false, ErrorCode.BadRequest, "Code is required.");
 			}
 
-			var clientId = configuration["GoogleLogin:ClientId"];
-			var clientSecret = configuration["GoogleLogin:ClientSecret"];
-			var redirectUri = configuration["GoogleLogin:RedirectUri"];
+			var clientId = _configuration["GoogleLogin:ClientId"];
+			var clientSecret = _configuration["GoogleLogin:ClientSecret"];
+			var redirectUri = _configuration["GoogleLogin:RedirectUri"];
 
 			var httpClient = _httpClientFactory.CreateClient();
 			var requestBody = new FormUrlEncodedContent(new[]
@@ -110,10 +137,10 @@ namespace ServiceLayer.Services
 			//if there is no user, create one with no password
 			var user = await _userManager.FindByEmailAsync(payload.Email);
 			if (user == null)
-			{		
+			{
 				User newUser = new User()
 				{
-					FirstName = !payload.Name.IsNullOrEmpty()? payload.Name:null,
+					FirstName = !payload.Name.IsNullOrEmpty() ? payload.Name : null,
 					LastName = !payload.FamilyName.IsNullOrEmpty() ? payload.FamilyName : null,
 					Email = payload.Email,
 					UserName = payload.Email,
@@ -125,13 +152,14 @@ namespace ServiceLayer.Services
 				var createUser = await _userManager.CreateAsync(newUser!);
 				if (!createUser.Succeeded) return new Result(false, ErrorCode.InternalServerError, "Error during creating account!");
 
-				var createRole = await _userManager.AddToRoleAsync(newUser, "User");
+				await _userManager.AddToRoleAsync(newUser, "User");
 			}
 			//after creating get that user from db and check him
 			user = await _userManager.FindByEmailAsync(payload.Email);
 			if (user is null) return new Result(false, ErrorCode.NotFound, "No user found");
 
 			if (user.IsDeleted) return new Result(true, "DELETED");
+			if (!user.IsGoogleLogin) return new Result(true, "NOT_GOOGLE");
 
 			//check if there is roles in db
 			var userRoles = await _userManager.GetRolesAsync(user);
@@ -144,6 +172,41 @@ namespace ServiceLayer.Services
 			return new Result(true, token!);
 		}
 
-		
+
+		public async Task<IResult> VerifyEmail(string token, string email)
+		{
+			var decodedToken = HttpUtility.UrlDecode(token);
+			decodedToken = decodedToken.Replace(" ", "+");
+
+			var decodedEmail = HttpUtility.UrlDecode(email);
+
+			var user = await _userManager.FindByEmailAsync(decodedEmail);
+			if (user == null)
+			{
+				return new Result(false, "Invalid email address.");
+			}
+
+			var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+			if (result.Succeeded)
+			{
+				user.EmailConfirmed = true;
+				await _userManager.UpdateAsync(user);
+				return new Result(true);
+			}
+
+			return new Result(false, "Error while verifying email.");
+		}
+
+	
+		private async Task<IResult> CompleteLoginHelper(User user)
+		{
+			var userRoles = await _userManager.GetRolesAsync(user);
+			if (!userRoles.Any()) return new Result(false, ErrorCode.NotFound, "No roles found");
+
+			//I'll take first one because I assume that user have only one role
+			var userSession = new UserSessionDto(user.Id, user.Email, userRoles.First(), user.IsGoogleLogin);
+			string token = _tokenHelper.GenerateToken(userSession);
+			return new Result(true, token!);
+		}
 	}
 }

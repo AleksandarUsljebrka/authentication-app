@@ -14,7 +14,7 @@ namespace ServiceLayer.Services.Interfaces
 		Task<IResult> CreateUser(RegisterDto userDto);
 		Task<IResult> LoginUser(LoginDto loginDto);
 		Task<IResult> GoogleLogin(GoogleLoginDto loginDto);
-
+		Task<IResult> VerifyEmail(string token, string email);
 
 
 	}
