@@ -4,6 +4,7 @@ import { AuthService } from "../../services/AuthService";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { toast } from "react-toastify";
 let initialUser = {
   email: "",
   password: "",
@@ -42,7 +43,10 @@ const RegisterUser = () => {
         await registrationSchema.validate(values);
         const response = await register(values);
 
-        if (response.status === "success") navigate("/login");
+        if (response.status === "success") {
+          toast.success("Successful registration. Check Email and verify", {autoClose:5000}); 
+          navigate("/login");
+        }
         else if (
           response.data ||
           response.status >= 300 ||

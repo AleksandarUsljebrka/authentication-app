@@ -26,7 +26,7 @@ export const AuthService = {
     googleLogin:async (data) =>{  
         try{
             const response = await axios.post(`${baseUrl}/auth/google-login`,{
-                idToken: data
+                code:data
             },
                 {
                     headers:{
@@ -40,5 +40,16 @@ export const AuthService = {
             return error.response;
         }
     },
-   
+    verifyEmailRequest:async (token,email) =>{
+        try {
+            const response = await axios.post(`${baseUrl}/auth/verify-email`,{
+                token:token,
+                email:email
+            });
+            return response;
+        } catch (error) {
+            return error.response;
+           
+        }
+    },
 }

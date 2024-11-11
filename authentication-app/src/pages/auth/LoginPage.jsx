@@ -42,7 +42,9 @@ const LoginUser = () => {
           toast.error(response.data);
         } else if (response.data === "DELETED") {
           toast.error("Your account has been deleted");
-        } else {
+        } else if(response.data ==="NOT_VERIFIED"){
+          toast.error("Your account is not verified. Check Email");
+        }else {
           await handleLogin(response.data);
         }
       } catch (error) {
@@ -59,16 +61,19 @@ const LoginUser = () => {
   
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async ({ code }) => {
-      const tokens = await axios.post('https://localhost:7235/auth/google-login', {  // http://localhost:3001/auth/google backend that will exchange the code
-        code,
-      });
-      if(tokens.status<200 || tokens.status>=300){
+      const response = await googleLogin(code);
+
+      if(response.status<200 || response.status>=300){
         toast.error("Google login failed");
         return;
+      }else if(response.data ==="NOT_GOOGLE"){
+        toast.error("You're not registred by Google. Try login form insted!",{autoClose:4000});
+      }else{
+        await handleLogin(response.data);
+
       }
 
-      await handleLogin(tokens.data);
-      console.log(tokens);
+      console.log(response);
     },
     flow: 'auth-code',
   });

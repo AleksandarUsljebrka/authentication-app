@@ -62,16 +62,22 @@ const AllUsersPage = () => {
     const response = await getAllUsers(user.token, currentPage, pageSize);
     if (response.status >= 300 || response.status < 200) {
       toast.error(response.data);
-      setFetch(false);
     } else {
-      setFetch(false);
       setUsers(response.data.users);
       setTotalPages(Math.ceil(response.data.count/pageSize));
     }
+    setFetch(false);
   };
+
   useEffect(() => {
-    fetchUsers();
-  }, [fetch, currentPage]);
+    if(isFilterActive && !isSearchActive){
+      handleFilterSubmit();
+    }else if(isSearchActive){
+      handleSearchSubmit();
+    }else{
+      fetchUsers();
+    }
+  }, [fetch,isFilterActive,isSearchActive, currentPage]);
 
 
 
@@ -88,7 +94,7 @@ const AllUsersPage = () => {
     setIsSearchActive(false);
     setEmailData(e.target.value);
   }
-  const handleFilterSubmit = async (e)=>{
+  const handleFilterSubmit = async ()=>{
     const filterDataWithNullDates = {
       startDate: filterData.startDate ? filterData.startDate : null,
       endDate: filterData.endDate ? filterData.endDate : null
@@ -111,7 +117,7 @@ const AllUsersPage = () => {
     
   }
 
-  const handleSearchSubmit = async (e)=>{
+  const handleSearchSubmit = async ()=>{
     setIsSearchActive(true)
     try{
       const response = await searchByEmail(email, user.token);
@@ -232,7 +238,7 @@ const handleClearSearch =()=>{
 
     { users.length>0 ? 
     <>
-     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2">
+     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 pb-3 gap-6 px-2">
         {users.map((user) => (
           <div
             key={user.id}
@@ -267,7 +273,7 @@ const handleClearSearch =()=>{
           </div>
         ))}
       </div>
-      <div className="flex justify-between items-center mt-4">
+      {!isFilterActive && !isSearchActive && <div className="flex justify-between items-center mt-4">
         <button
           className={`px-4 py-2 bg-gray-300 rounded-full ${currentPage === 1 ? "cursor-not-allowed opacity-50" : ""}`}
           onClick={() => goToPage(currentPage - 1)}
@@ -283,7 +289,7 @@ const handleClearSearch =()=>{
         >
           Next &gt;
         </button>
-      </div>
+      </div>}
       </>
       :
       <div className="text-3xl text-gray-800 font-semibold flex justify-center items-center">

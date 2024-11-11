@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Modal from 'react-modal';
 import MyProfilePage from "./pages/MyProfile";
 import Loading from "./components/Loading";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 
 Modal.setAppElement('#root');
 function App() {
@@ -24,7 +25,6 @@ function App() {
   useEffect(() => {
     loadUser();
   }, [loadUser]);
-  console.log(isAdmin);
   if (isLoading)
     return (
      <Loading/>
@@ -48,6 +48,10 @@ function App() {
             element={!isLoggedIn ? <LoginUser /> : <Navigate to="/" />}
           />
 
+          <Route
+            path="/verify-email"
+            element={!isLoggedIn ? <VerifyEmailPage /> : <Navigate to="/" />}
+          />
           <Route
             path="/register"
             element={!isLoggedIn ? <RegisterUser /> : <Navigate to="/" />}
