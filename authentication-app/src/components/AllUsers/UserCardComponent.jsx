@@ -3,7 +3,7 @@ const UserCardComponent = ({user, handleDelete}) => {
   return (
     <div
     key={user.id}
-    className="bg-white h- rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105"
+    className="bg-white  rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105"
   >
     <div className="px-6 pt-6 pb-2 h-full flex flex-col">
       <div className="flex items-center mb-4">
@@ -12,9 +12,15 @@ const UserCardComponent = ({user, handleDelete}) => {
           {user.lastName.charAt(0)}
         </div>
         <div>
-          <h3 className="text-xl font-semibold text-gray-800">
-            {user.firstName} {user.lastName}
-          </h3>
+          <div className="flex flex-col text-xl font-semibold text-gray-800">
+            <h4>
+                {user.firstName} 
+
+            </h4>
+            <h4>
+                {user.lastName}
+            </h4>
+          </div>
           <p className="text-sm text-gray-600">{user.email}</p>
           <p className="text-xs text-gray-500">
             {new Date(user.dateOfBirth).toLocaleDateString()}

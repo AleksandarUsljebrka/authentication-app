@@ -1,3 +1,4 @@
+
 import React, { useCallback, useEffect, useState } from "react";
 import { AdminService } from "../services/AdminService";
 import { useAuth } from "../context/authContext";
@@ -8,12 +9,14 @@ import SearchEmailComponent from "../components/AllUsers/SearchEmailComponent";
 import ModalComponent from "../components/AllUsers/ModalComponent";
 import AllUsersGridComponent from "../components/AllUsers/AllUsersGridComponent";
 import PaginationComponent from "../components/AllUsers/PaginationComponent";
+import VerificationFilterComponent from "../components/AllUsers/VerificationFilterComponent";
 
 let initialFilter = {
   startDate: "",
   endDate: "",
   email: "",
 };
+
 const AllUsersPage = () => {
   const [users, setUsers] = useState([]);
   const [filterData, setFilterData] = useState({
@@ -21,21 +24,46 @@ const AllUsersPage = () => {
     endDate: "",
   });
   const [email, setEmailData] = useState("");
-
-  const [fetch, setFetch] = useState(false);
-
-  const { getAllUsers, deleteUser, filterUsers, searchByEmail } = AdminService;
-  const { user } = useAuth();
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
-
-  const [isFilterActive, setIsFilterActive] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-
+  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [verificationFilter, setVerificationFilter] = useState("all"); // 'all', 'verified', 'unverified'
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 8;
+  const { getAllUsers, deleteUser, filterUsers, searchByEmail } = AdminService;
+  const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  const fetchUsers = useCallback(async () => {
+    let response;
+    if (isSearchActive) {
+      response = await searchByEmail(email, verificationFilter, user.token);
+    } else if (isFilterActive && !isSearchActive) {
+      const filterDataWithNullDates = {
+        startDate: filterData.startDate || null,
+        endDate: filterData.endDate || null,
+        isVerified: verificationFilter,
+      };
+      response = await filterUsers(filterDataWithNullDates, user.token);
+    } else {
+      response = await getAllUsers(user.token, verificationFilter, currentPage, pageSize);
+    }
+
+    if (response.status >= 300 || response.status < 200) {
+      toast.error(response.data || "Error loading users");
+    } else {
+      if(isSearchActive)
+        setUsers([response.data])
+      else
+        setUsers(response.data.users);
+      setTotalPages(Math.ceil(response.data.count / pageSize));
+    }
+  }, [ isSearchActive,isFilterActive, verificationFilter, currentPage, getAllUsers, filterUsers, searchByEmail, user.token]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleDelete = (userId) => {
     setUserToDelete(userId);
@@ -46,105 +74,36 @@ const AllUsersPage = () => {
     if (userToDelete) {
       try {
         const response = await deleteUser(userToDelete, user.token);
-        console.log(response);
         if (response.status >= 300 || response.status < 200) {
-          toast.error(response.data ? response.data : "Failed to delete user");
-          throw new Error();
+          toast.error(response.data || "Failed to delete user");
+        } else {
+          toast.success("User deleted successfully!");
+          setIsModalOpen(false);
+          fetchUsers(); 
         }
-
-        toast.success("User deleted successfully!");
-        setIsModalOpen(false);
-        setFetch(true);
       } catch (error) {
-        setIsModalOpen(false);
-        // toast.error("Failed to delete user");
+        toast.error("Failed to delete user");
       }
     }
   };
 
-  const handleSearchSubmit = useCallback(async () => {
-    setIsSearchActive(true);
-    try {
-      const response = await searchByEmail(email, user.token);
-      console.log(response);
-      if (response.status >= 300 || response.status < 200) {
-        toast.error("Search failed");
-        setEmailData("");
-      } else {
-        setUsers([response.data]);
-      }
-    } catch (error) {
-      toast.error("Search failed");
-    }
-  },[email,searchByEmail, user.token]);
-  
-  
-  const handleFilterSubmit = useCallback( async () => {
-    const filterDataWithNullDates = {
-      startDate: filterData.startDate ? filterData.startDate : null,
-      endDate: filterData.endDate ? filterData.endDate : null,
-    };
+  const handleSearchSubmit = () => {
+    setIsSearchActive(true);    
+  };
+
+  const handleFilterSubmit = () => {
     setIsFilterActive(true);
-    try {
-      const response = await filterUsers(filterDataWithNullDates, user.token);
-      console.log(response);
-      if (response.status >= 300 || response.status < 200) {
-        toast.error("Filter failed");
-        setFilterData(initialFilter);
-      } else {
-        setUsers(response.data.users);
-      }
-    } catch (error) {
-      toast.error("Filter failed");
-    }
-  },[filterData, filterUsers, user.token]);
-
-  
-  const handleFilterChange = (e) => {
-    setIsFilterActive(false);
-    setFilterData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
   };
 
-  const handleEmailChange = (e) => {
-    setIsSearchActive(false);
-    setEmailData(e.target.value);
-  };
- 
-  const handleClearFilter = (e) => {
+  const handleClearFilter = () => {
     setFilterData(initialFilter);
     setIsFilterActive(false);
-    setFetch(true);
   };
+
   const handleClearSearch = () => {
     setEmailData("");
     setIsSearchActive(false);
-    setFetch(true);
   };
-  const fetchUsers = useCallback(async () => {
-    const response = await getAllUsers(user.token, currentPage, pageSize);
-    if (response.status >= 300 || response.status < 200) {
-      toast.error(response.data);
-    } else {
-      setUsers(response.data.users);
-      setTotalPages(Math.ceil(response.data.count / pageSize));
-    }
-    setFetch(false);
-  },[currentPage, getAllUsers,user.token]);
-
-  useEffect(() => {
-    if (isFilterActive && !isSearchActive) {
-      handleFilterSubmit();
-    } else if (isSearchActive) {
-      handleSearchSubmit();
-    } else {
-      fetchUsers();
-    }
-  }, [fetch, isFilterActive, isSearchActive, currentPage, fetchUsers, handleSearchSubmit, handleFilterSubmit]);
-
-  
 
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -152,22 +111,22 @@ const AllUsersPage = () => {
     }
   };
 
-  const isDateFilterEmpty = !filterData.endDate && !filterData.startDate;
- 
   return (
-    <div className="container  min-h-screen mx-auto pt-24">
+    <div className="container min-h-screen mx-auto pt-24">
       <h2 className="text-3xl font-semibold text-gray-800 text-center mb-6">
         Users List
       </h2>
 
       <div className="flex flex-wrap justify-between gap-6 mb-8 px-2">
         <FilterDateComponent
-          handleFilterChange={handleFilterChange}
+          handleFilterChange={(e) =>
+            setFilterData({ ...filterData, [e.target.name]: e.target.value })
+          }
           filterData={filterData}
         >
           <Button
             buttonText={!isFilterActive ? "Filter" : "Clear"}
-            disabled={isDateFilterEmpty}
+            disabled={!filterData.startDate && !filterData.endDate}
             className="w-20 sm:h-10 lg:h-12 h-10"
             onClick={!isFilterActive ? handleFilterSubmit : handleClearFilter}
           />
@@ -175,7 +134,7 @@ const AllUsersPage = () => {
 
         <SearchEmailComponent
           email={email}
-          handleEmailChange={handleEmailChange}
+          handleEmailChange={(e) => setEmailData(e.target.value)}
         >
           <Button
             buttonText={!isSearchActive ? "Search" : "Clear"}
@@ -184,6 +143,8 @@ const AllUsersPage = () => {
             onClick={!isSearchActive ? handleSearchSubmit : handleClearSearch}
           />
         </SearchEmailComponent>
+
+       <VerificationFilterComponent verificationFilter={verificationFilter} setVerificationFilter={setVerificationFilter}/>
       </div>
 
       <ModalComponent

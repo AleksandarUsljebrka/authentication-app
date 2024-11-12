@@ -13,12 +13,12 @@ namespace AuthenticationAppAPI.Controllers
 	public class AdminController(IAdminService _adminService) : Controller
 	{
 		[HttpGet("all-users")]
-		public async Task<IActionResult> GetAllUsers([FromQuery]PaginationDto paginationDto)
+		public async Task<IActionResult> GetAllUsers([FromQuery]PaginationDto paginationDto, [FromQuery]string isVerified)
 		{
 			try
 			{
 				var token = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").LastOrDefault();
-				var result = await _adminService.GetAllUsers(token, paginationDto);
+				var result = await _adminService.GetAllUsers(token, isVerified, paginationDto);
 
 				if (!result.Successful) return StatusCode((int)result.ErrorCode, result.ErrorMess);
 
@@ -51,7 +51,7 @@ namespace AuthenticationAppAPI.Controllers
 
 		[HttpPost("filter")]
 		[Authorize(Roles = "Admin")]
-		public async Task<IActionResult> FilterUsers(UserFilter userFilter)
+		public async Task<IActionResult> FilterUsers([FromBody]UserFilter userFilter)
 		{
 			try
 			{
@@ -71,13 +71,13 @@ namespace AuthenticationAppAPI.Controllers
 
 		[HttpGet("search")]
 		[Authorize(Roles = "Admin")]
-		public async Task<IActionResult> SearchByEmail([FromQuery]string email)
+		public async Task<IActionResult> SearchByEmail([FromQuery]string email, [FromQuery]string isVerified)
 		{
 			try
 			{
 				var token = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").LastOrDefault();
 
-				var result = await _adminService.SearchUserByEmail(email, token);
+				var result = await _adminService.SearchUserByEmail(email,isVerified, token);
 
 				if (!result.Successful) return StatusCode((int)result.ErrorCode, result.ErrorMess);
 

@@ -2,9 +2,9 @@ import axios from "axios";
 import { baseUrl } from "../config/config";
 
 export const AdminService = {
-    getAllUsers:async (token, pageNumber,pageSize) =>{  
+    getAllUsers:async (token,isVerified, pageNumber,pageSize) =>{  
         try{
-            const response = await axios.get(`${baseUrl}/admin/all-users?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+            const response = await axios.get(`${baseUrl}/admin/all-users?pageNumber=${pageNumber}&pageSize=${pageSize}&isVerified=${isVerified}`,
                 {
                     headers:{
                         Authorization:`Bearer ${token}`
@@ -46,9 +46,9 @@ export const AdminService = {
             return error.response;
         }
     },
-    searchByEmail:async (data, token) =>{  
+    searchByEmail:async (email,isVerified, token) =>{  
         try{
-            const response = await axios.get(`${baseUrl}/admin/search?email=${data}`,
+            const response = await axios.get(`${baseUrl}/admin/search?email=${email}&isVerified=${isVerified}`,
                 {
                     headers:{
                         Authorization:`Bearer ${token}`
