@@ -27,7 +27,6 @@ const registrationSchema = yup.object().shape({
 const RegisterUser = () => {
   const { register } = AuthService;
 
-  const [error, setError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
 
@@ -38,7 +37,7 @@ const RegisterUser = () => {
     validationSchema: registrationSchema,
 
     onSubmit: async (values) => {
-      setError("");
+ 
       try {
         await registrationSchema.validate(values);
         const response = await register(values);
@@ -52,11 +51,10 @@ const RegisterUser = () => {
           response.status >= 300 ||
           response.status < 200
         ) {
-          setError(response.data);
-          alert(response.data);
+          toast.error(response.data);
         }
       } catch (error) {
-        setError(error?.message || "Registration failed");
+        toast.error(error?.message || "Registration failed");
       }
     },
   });

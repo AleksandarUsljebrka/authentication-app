@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthService } from '../../services/AuthService';
 
@@ -12,20 +12,8 @@ const VerifyEmailPage = () => {
     const [loading, setLoading] = useState(true);
     const {verifyEmailRequest} = AuthService;
 
-    useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const token = queryParams.get('token');
-        const email = queryParams.get('email');
 
-        if (token && email) {
-            verifyEmail(token, email);
-        } else {
-            setStatus('Invalid link or missing parameters.');
-            setLoading(false);
-        }
-    }, [location]);
-
-    const verifyEmail = async (token, email) => {
+    const verifyEmail = useCallback(async (token, email) => {
         setLoading(true);
         try {
             const encodedToken = encodeURIComponent(token);
@@ -47,8 +35,22 @@ const VerifyEmailPage = () => {
             setStatus('Network error. Please try again later.');
             setLoading(false);
         }
-    };
+    },[]);
 
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const token = queryParams.get('token');
+        const email = queryParams.get('email');
+
+        if (token && email) {
+            verifyEmail(token, email);
+        } else {
+            setStatus('Invalid link or missing parameters.');
+            setLoading(false);
+        }
+    }, [location, verifyEmail]);
+
+   
     return (
         <div className='pt-20 min-h-screen flex justify-center items-center font-semibold text-4xl'>
             <div className=''>

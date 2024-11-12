@@ -1,6 +1,7 @@
 import React from 'react'
 import Button from './Button';
-import addPhoto from "../assets/addPhoto.png";
+import ImageUploader from './MyProfile/ImageUploader';
+import { useAuth } from '../context/authContext';
 
 
 const ChangeUserProfileForm = ({
@@ -9,46 +10,22 @@ const ChangeUserProfileForm = ({
   handleImageClick,
   handleImageChange,
   userData,
-  inputRef
+  inputRef,
+  handle2FAChange,
+  is2FAEnabled
 }) => {
+    const {user} = useAuth();
+
     return (
         <form onSubmit={formik.handleSubmit} className="bg-white p-6 rounded-lg shadow-lg">
-        <div className="flex justify-between">
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="profileImage">
-              Profile Image
-            </label>
-            <div
-              className="mt-2 flex flex-col justify-self-start cursor-pointer"
-              onClick={handleImageClick}
-            >
-              {profileImage ? (
-                <div className="relative">
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    className="w-36 h-40 mb-11 rounded-lg border-black shadow-xl object-contain"
-                  />
-                  <img src={addPhoto} className="w-6 h-6 absolute bottom-6   -right-2" />
-                </div>
-              ) : (
-                <div className="w-36 h-40 mb-11 ml-3 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-gray-500">No Image</span>
-                </div>
-              )}
-              <input
-                id="profileImage"
-                name="profileImage"
-                type="file"
-                accept="image/*"
-                ref={inputRef}
-                onChange={handleImageChange}
-                className="w-2/3 hidden"
-              />
-            </div>
-          </div>
-        </div>
-  
+       
+        <ImageUploader
+            label="Profile Image"
+            profileImage={profileImage}
+            handleImageChange={handleImageChange}
+            handleImageClick={handleImageClick}
+            inputRef={inputRef}
+        />
         <div className="pt-12">
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700" htmlFor="firstName">
@@ -117,7 +94,19 @@ const ChangeUserProfileForm = ({
               className="mt-2 p-2 w-full border rounded-md bg-gray-200 cursor-not-allowed"
             />
           </div>
-  
+         {user.isGoogleLogedIn ==="form" && <div className="mb-4 flex items-center justify-start">
+            <label className="mr-10 text-sm font-medium text-gray-700" htmlFor="2fa">
+              Two Factor Authentication
+            </label>
+            <input
+              id="2fa"
+              name="2fa"
+              type="checkbox"
+              checked={is2FAEnabled}
+              onChange={handle2FAChange}
+              className="p-2 h-5 w-5 border rounded-md bg-gray-200"
+            />
+          </div>}
           <Button buttonText="Update Profile" className="w-full mt-6" />
         </div>
       </form>

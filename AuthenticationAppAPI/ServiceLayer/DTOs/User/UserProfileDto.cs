@@ -10,5 +10,7 @@ namespace ServiceLayer.DTOs.User
 		public DateTime DateOfBirth { get; set; }
 		public bool IsVerified { get; set; }
 		public bool IsGoogleLogin { get; set; }
+		public bool Is2FAEnabled { get; set; }
+
 	}
 }

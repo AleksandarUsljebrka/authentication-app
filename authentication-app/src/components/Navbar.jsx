@@ -6,9 +6,6 @@ const Navbar = () => {
 
    const isAdmin = user.role === 'Admin' && isLoggedIn;
 
-   const onLogout = () =>{
-    handleLogout();
-   }
     return (
       <>
       <nav className="bg-gray-400 z-10 fixed top-0 left-0 w-screen flex justify-between items-center">

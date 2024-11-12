@@ -24,6 +24,7 @@ let initialUser ={
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(initialUser);
     const [isLoading, setIsLoading] = useState(true);
+    const [email, setEmail] = useState('');
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isGoogleLogedIn, setIsGoogleLogedIn] = useState(false);
@@ -70,7 +71,7 @@ export const AuthContextProvider = ({ children }) => {
         setIsGoogleLogedIn(user.isGoogleLogedIn==='google')
         const userData = tokenHelper.getUser();
         setUser(userData);
-    }, [])
+    }, [isGoogleLogedIn])
 
   return <AuthContext.Provider
     value={{
@@ -78,6 +79,8 @@ export const AuthContextProvider = ({ children }) => {
         handleLogout:logout,
         loadUser:loadUser,
         isLoggedIn:isLoggedIn,
+        email,
+        setEmail,
         isGoogleLogedIn:isGoogleLogedIn,
         user:user,
         isLoading:isLoading

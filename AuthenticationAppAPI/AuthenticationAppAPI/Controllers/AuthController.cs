@@ -66,7 +66,28 @@ namespace AuthenticationAppAPI.Controllers
 					return StatusCode((int)result.ErrorCode, result.ErrorMess);
 				}
 				else
-					return Ok();
+					return Ok(result.Token);
+			}
+			catch (Exception)
+			{
+				return StatusCode(StatusCodes.Status500InternalServerError);
+
+			}
+		}
+
+		[HttpPost("verify-2fa")]
+		public async Task<IActionResult> Verify2Fa([FromBody] Verify2FADto verify2FADto)
+		{
+			var result = await _authService.Verify2FAToken(verify2FADto.Token, verify2FADto.Email);
+
+			try
+			{
+				if (!result.Successful)
+				{
+					return StatusCode((int)result.ErrorCode, result.ErrorMess);
+				}
+				else
+					return Ok(result.Token);
 			}
 			catch (Exception)
 			{

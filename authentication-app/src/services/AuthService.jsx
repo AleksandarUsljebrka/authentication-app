@@ -52,4 +52,17 @@ export const AuthService = {
            
         }
     },
+    verify2FAToken:async (token, email) =>{
+        try {
+            const response = await axios.post(`${baseUrl}/auth/verify-2fa`,{
+                token,
+                email
+            });
+            return response;
+        } catch (error) {
+            return error.response;
+           
+        }
+    },
+       
 }

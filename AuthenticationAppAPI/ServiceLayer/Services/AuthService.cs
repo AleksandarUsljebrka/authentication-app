@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using ServiceLayer.Helpers.Email;
 using Microsoft.AspNetCore.Mvc;
 using System.Web;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 
 namespace ServiceLayer.Services
@@ -90,7 +91,16 @@ namespace ServiceLayer.Services
 
 			if (!user.EmailConfirmed) return new Result(true, "NOT_VERIFIED");
 
-			
+			if (user.TwoFactorEnabled)
+			{
+				var token2FA = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+
+				var emailSubject = "Your 2FA Token";
+				var emailBody = $"Your 2FA token is {token2FA}";
+
+				_emailSender.SendEmail(emailBody, user.Email, emailSubject);
+				return new Result(true, "2FA");
+			}
 
 			return await CompleteLoginHelper(user);
 			
@@ -197,7 +207,50 @@ namespace ServiceLayer.Services
 			return new Result(false, "Error while verifying email.");
 		}
 
-	
+		//public async Task<IResult> Enable2FA(string userId)
+		//{
+		//	var user = await _userManager.FindByIdAsync(userId);
+		//	if (user == null)
+		//	{
+		//		return new Result(false, "User not found.");
+		//	}
+
+		//	user.TwoFactorEnabled = true;
+		//	await _userManager.UpdateAsync(user);
+
+		//	return new Result(true);
+		//}
+		//public async Task<IResult> Disable2FA(string userId)
+		//{
+		//	var user = await _userManager.FindByIdAsync(userId);
+		//	if (user == null)
+		//	{
+		//		return new Result(false, "User not found.");
+		//	}
+
+		//	user.TwoFactorEnabled = false;
+		//	await _userManager.UpdateAsync(user);
+
+		//	return new Result(true);
+		//}
+		public async Task<IResult> Verify2FAToken(string token, string email)
+		{
+			var user = await _userManager.FindByEmailAsync(email);
+			if (user == null || !user.TwoFactorEnabled)
+			{
+				return new Result(false, "User not found or 2FA not enabled.");
+			}
+
+			var isTokenValid = await _userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider, token);
+
+			if (isTokenValid)
+			{
+				return await CompleteLoginHelper(user);
+			}
+
+			return new Result(false, "Invalid 2FA token.");
+		}
+
 		private async Task<IResult> CompleteLoginHelper(User user)
 		{
 			var userRoles = await _userManager.GetRolesAsync(user);

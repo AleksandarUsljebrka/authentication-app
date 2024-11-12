@@ -15,6 +15,7 @@ import Modal from 'react-modal';
 import MyProfilePage from "./pages/MyProfile";
 import Loading from "./components/Loading";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
+import TwoFactorPage from "./pages/auth/TwoFactorPage";
 
 Modal.setAppElement('#root');
 function App() {
@@ -51,6 +52,10 @@ function App() {
           <Route
             path="/verify-email"
             element={!isLoggedIn ? <VerifyEmailPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/verify-2fa"
+            element={!isLoggedIn ? <TwoFactorPage /> : <Navigate to="/" />}
           />
           <Route
             path="/register"

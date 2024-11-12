@@ -29,7 +29,6 @@ export const AdminService = {
             return response;
         }catch(error){
             return error.response;
-            throw new Error(error.response?.data?.message || 'Login failed');
         }
     },
     filterUsers:async (data, token) =>{  

@@ -5,9 +5,9 @@ import { AuthService } from "../../services/AuthService";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "react-toastify";
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import {  useGoogleLogin } from "@react-oauth/google";
 import GoogleButton from "../../components/GoogleButton";
+import { useNavigate } from "react-router-dom";
 // import g from 'src/assets/google.p';
 let initialUser = {
   email: "",
@@ -24,8 +24,10 @@ const loginSchema = yup.object().shape({
 const LoginUser = () => {
   const [error, setError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
- 
-  const { handleLogin } = useAuth();
+  
+  const navigate = useNavigate();
+
+  const { handleLogin,setEmail } = useAuth();
   const { login, googleLogin } = AuthService;
 
   const formik = useFormik({
@@ -44,6 +46,9 @@ const LoginUser = () => {
           toast.error("Your account has been deleted");
         } else if(response.data ==="NOT_VERIFIED"){
           toast.error("Your account is not verified. Check Email");
+        }else if(response.data === "2FA"){
+          setEmail(values.email);
+          navigate("/verify-2fa");
         }else {
           await handleLogin(response.data);
         }

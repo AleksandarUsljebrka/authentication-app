@@ -3,7 +3,6 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/authContext";
-import Button from "../components/Button";
 import { UserService } from "../services/UserService";
 import ChangePasswordForm from "../components/ChangePasswordForm";
 import ChangeUserProfileForm from "../components/ChangeUserProfileForm";
@@ -17,57 +16,19 @@ const profileSchema = yup.object().shape({
 
 
 const MyProfilePage = () => {
-  const { user, isGoogleLogedIn } = useAuth();
+  const { user } = useAuth();
   const [userData, setUserData] = useState({});
-  const { updateUser, getUserProfile, getUserImage, updateUserImage, updateUserPassword } =
+  const { updateUser, getUserProfile, getUserImage, updateUserImage } =
     UserService;
   
   const [profileImage, setProfileImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-  const [passwordData, setPasswordData] = useState({});
+
+  const [is2FAEnabled, setIs2FAEnabled] = useState(true);
 
   const inputRef = useRef();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-
-      const response = await getUserProfile(user.token);
-      
-      if (response.status >= 300 || response.status < 200) {
-        toast.error("Can't get user data");
-        return;
-      }
-      setUserData(response.data);
-      console.log(isGoogleLogedIn) 
-      const imgResponse = await getUserImage(user.token);
-      
-      if (imgResponse.status >= 300 || imgResponse.status < 200) {
-        toast.error("Can't get user image");
-        return;
-      } else if (imgResponse.data === "NO_IMAGE" || !imgResponse.data ) {
-        setProfileImage(null);
-      }else{
-        setProfileImage("data:image/*;base64," + imgResponse.data.image);
-
-      }
-      
-    };
-
-    fetchUser();
-  }, []);
-
-  useEffect(() => {
-    if (userData) {
-      formik.setValues({
-        firstName: userData.firstName || "",
-        lastName: userData.lastName || "",
-        dateOfBirth: userData.dateOfBirth || "",
-      });
-      setProfileImage(userData.imageUrl);
-
-    }
-  }, [userData]);
-
+ 
   const formik = useFormik({
     initialValues: {
       firstName: user?.firstName || "",
@@ -79,6 +40,7 @@ const MyProfilePage = () => {
       try {
         const updatedData = {
           ...values,
+          is2FAEnabled,
         };
 
         if (imageFile) {
@@ -106,7 +68,7 @@ const MyProfilePage = () => {
     },
   });
 
-  const handleImageClick = (event) => {
+  const handleImageClick = () => {
     inputRef.current.click();
   };
   const handleImageChange = (event) => {
@@ -120,6 +82,51 @@ const MyProfilePage = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  const handle2FAChange = () =>{
+    setIs2FAEnabled(prev => !prev);
+  }
+
+  useEffect(() => {
+    const fetchUser = async () => {
+
+      const response = await getUserProfile(user.token);
+      
+      if (response.status >= 300 || response.status < 200) {
+        toast.error("Can't get user data");
+        return;
+      }
+      setUserData(response.data);
+      
+      const imgResponse = await getUserImage(user.token);
+      
+      if (imgResponse.status >= 300 || imgResponse.status < 200) {
+        toast.error("Can't get user image");
+        return;
+      } else if (imgResponse.data === "NO_IMAGE" || !imgResponse.data ) {
+        setProfileImage(null);
+      }else{
+        setProfileImage("data:image/*;base64," + imgResponse.data.image);
+
+      }
+      
+    };
+
+    fetchUser();
+  }, [getUserImage,getUserProfile,user.token]);
+
+  useEffect(() => {
+    if (userData) {
+      formik.setValues({
+        firstName: userData.firstName || "",
+        lastName: userData.lastName || "",
+        dateOfBirth: userData.dateOfBirth || "",
+      });
+      console.log(userData)
+      setProfileImage(userData.imageUrl);
+      setIs2FAEnabled(!!userData.is2FAEnabled)
+    }
+  }, [userData]);
 
   return (
     <div className="max-w-4xl pt-24 mx-auto min-h-screen p-4">
@@ -137,6 +144,8 @@ const MyProfilePage = () => {
       handleImageChange={handleImageChange}
       userData={userData}
       inputRef={inputRef}
+      is2FAEnabled={is2FAEnabled}
+      handle2FAChange={handle2FAChange}
       />
       </div>
     </div>
