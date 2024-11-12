@@ -156,7 +156,9 @@ namespace ServiceLayer.Services
 					UserName = payload.Email,
 					IsGoogleLogin = true,
 					IsVerified = false,
-					IsDeleted = false
+					IsDeleted = false,
+					EmailConfirmed = true,
+
 				};
 
 				var createUser = await _userManager.CreateAsync(newUser!);
@@ -207,32 +209,6 @@ namespace ServiceLayer.Services
 			return new Result(false, "Error while verifying email.");
 		}
 
-		//public async Task<IResult> Enable2FA(string userId)
-		//{
-		//	var user = await _userManager.FindByIdAsync(userId);
-		//	if (user == null)
-		//	{
-		//		return new Result(false, "User not found.");
-		//	}
-
-		//	user.TwoFactorEnabled = true;
-		//	await _userManager.UpdateAsync(user);
-
-		//	return new Result(true);
-		//}
-		//public async Task<IResult> Disable2FA(string userId)
-		//{
-		//	var user = await _userManager.FindByIdAsync(userId);
-		//	if (user == null)
-		//	{
-		//		return new Result(false, "User not found.");
-		//	}
-
-		//	user.TwoFactorEnabled = false;
-		//	await _userManager.UpdateAsync(user);
-
-		//	return new Result(true);
-		//}
 		public async Task<IResult> Verify2FAToken(string token, string email)
 		{
 			var user = await _userManager.FindByEmailAsync(email);
